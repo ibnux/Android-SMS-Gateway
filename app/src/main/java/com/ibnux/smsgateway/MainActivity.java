@@ -1,7 +1,8 @@
 package com.ibnux.smsgateway;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+/**
+ * Created by Ibnu Maksum 2020
+ */
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -12,6 +13,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.ibnux.smsgateway.layanan.BackgroundService;
 import com.karumi.dexter.Dexter;

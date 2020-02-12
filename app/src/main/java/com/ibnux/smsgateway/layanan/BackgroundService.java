@@ -1,5 +1,9 @@
 package com.ibnux.smsgateway.layanan;
 
+/**
+ * Created by Ibnu Maksum 2020
+ */
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

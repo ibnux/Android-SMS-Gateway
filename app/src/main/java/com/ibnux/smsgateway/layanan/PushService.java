@@ -1,5 +1,9 @@
 package com.ibnux.smsgateway.layanan;
 
+/**
+ * Created by Ibnu Maksum 2020
+ */
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;

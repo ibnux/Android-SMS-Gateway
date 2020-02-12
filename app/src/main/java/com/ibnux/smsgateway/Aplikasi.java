@@ -1,14 +1,11 @@
 package com.ibnux.smsgateway;
 
+/**
+ * Created by Ibnu Maksum 2020
+ */
+
 import android.app.Application;
 import android.content.SharedPreferences;
-import android.os.Handler;
-
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.UUID;
 
@@ -31,23 +28,4 @@ public class Aplikasi extends Application {
         }
     }
 
-//    public void registerTopic(){
-//        FirebaseMessaging.getInstance().subscribeToTopic(channel)
-//                .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Void> task) {
-//                        if (task.isSuccessful()) {
-//                            sp.edit().putBoolean("subscribe",true).apply();
-//                        }else{
-//                            //ulang jika gagal
-//                            new Handler().postDelayed(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    registerTopic();
-//                                }
-//                            },5000);
-//                        }
-//                    }
-//                });
-//    }
 }
