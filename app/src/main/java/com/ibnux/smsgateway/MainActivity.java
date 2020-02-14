@@ -7,13 +7,22 @@ package com.ibnux.smsgateway;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -25,6 +34,7 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private boolean serviceActive = false;
@@ -74,6 +84,83 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         },3000);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.menu_change_expired:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Change expired, by seconds");
+
+                final EditText input = new EditText(this);
+                input.setMaxLines(1);
+                input.setInputType(InputType.TYPE_CLASS_PHONE | InputType.TYPE_TEXT_VARIATION_PHONETIC);
+                builder.setView(input);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String ex = input.getText().toString();
+                        try{
+                            int exi = Integer.parseInt(ex);
+                            if(exi<5){
+                                exi = 5;
+                            }
+                            getSharedPreferences("pref",0).edit().putInt("expired", exi).commit();
+                            Toast.makeText(MainActivity.this,"Expired changed",Toast.LENGTH_LONG).show();
+                        }catch (Exception e){
+                            //not numeric
+                        }
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+                return true;
+            case R.id.menu_change_secret:
+                new AlertDialog.Builder(this)
+                        .setTitle("Change Secret")
+                        .setMessage("This will denied previous secret")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                getSharedPreferences("pref",0).edit().putString("secret", UUID.randomUUID().toString()).commit();
+                                updateInfo();
+                                Toast.makeText(MainActivity.this,"Secret changed",Toast.LENGTH_LONG).show();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                return true;
+            case R.id.menu_clear_logs:
+                new AlertDialog.Builder(this)
+                        .setTitle("Clear All Logs")
+                        .setMessage("Are you sure?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Fungsi.clearLogs(MainActivity.this);
+                                txtLogs.setText(Fungsi.readFile(MainActivity.this));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                return true;
+        }
+        return false;
     }
 
     @Override
