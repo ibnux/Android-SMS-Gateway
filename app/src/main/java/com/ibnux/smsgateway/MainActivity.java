@@ -100,8 +100,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_change_expired:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Change expired, by seconds");
-
+                builder.setMessage("If you use Md5 for secret with time, if time expired, it will not send SMS");
                 final EditText input = new EditText(this);
+                input.setText(getSharedPreferences("pref",0).getInt("expired",3600)+"");
                 input.setMaxLines(1);
                 input.setInputType(InputType.TYPE_CLASS_PHONE | InputType.TYPE_TEXT_VARIATION_PHONETIC);
                 builder.setView(input);
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_change_secret:
                 new AlertDialog.Builder(this)
                         .setTitle("Change Secret")
-                        .setMessage("This will denied previous secret")
+                        .setMessage("This will denied previous secret, every sms with previous secret ")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 getSharedPreferences("pref",0).edit().putString("secret", UUID.randomUUID().toString()).commit();
