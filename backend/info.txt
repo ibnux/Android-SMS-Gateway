@@ -1,0 +1,28 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<pre>
+[PARAMATER]
+GET or POST
+
+<b>to</b> : phone number
+<b>text</b> : text message
+<b>secret</b> : md5 secret key with time
+<b>deviceID</b> : Device ID from app
+<b>time</b> : time second used for secret
+
+[PHP EXAMPLE]
+&lt;?php
+$time = time();
+$deviceID = "sadsdgsadasfsf";
+$secret = "b0ecc194-ibnu-ibnu-b12b-bc7e8c60919b";
+$secret = md5($secret.$time);
+
+// USING GET
+echo file_get_contents("https://sms.ibnux.net/?to=".urlencode("+62818123456")."&text=".urlencode("hello world")."&secret=$secret&time=$time&deviceID=".urlencode($deviceID));
+
+// with POST, you don't need </b>urlencode</b>
+
+?&gt;
+
+
+Download android apps at <a href="https://github.com/ibnux/Android-SMS-Gateway/releases">github</a>
+</pre>
