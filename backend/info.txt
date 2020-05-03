@@ -11,6 +11,10 @@ GET or POST
 
 [PHP EXAMPLE]
 &lt;?php
+
+//Set to your time zone in phone
+date_default_timezone_set('Asia/Jakarta');
+
 $time = time();
 $deviceID = "sadsdgsadasfsf";
 $secret = "b0ecc194-ibnu-ibnu-b12b-bc7e8c60919b";
