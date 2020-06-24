@@ -10,6 +10,13 @@ to turn my android as sms sender
 Download APK from [release](https://github.com/ibnux/Android-SMS-Gateway/releases) page  
   then open https://sms.ibnux.net/ to learn how to send sms
 
+
+## Traktir @ibnux
+
+[<img src="https://ibnux.github.io/KaryaKarsa-button/karyaKarsaButton.png" width="128">](https://karyakarsa.com/ibnux)
+[<img src="https://ibnux.github.io/Trakteer-button/trakteer_button.png" width="120">](https://trakteer.id/ibnux)
+
+
 # LICENSE  
 ## Apache License 2.0  
   
