@@ -21,13 +21,14 @@ if(empty($to) || empty($text) || empty($secret) || empty($token)){
     die();
 }
 
-$hasil = sendPush($token,$secret,$time,$to, $text);
+$result = sendPush($token,$secret,$time,$to, $text);
 
 if(isset($_GET['debug']) && count($_REQUEST)>1)
-	file_put_contents("log.txt",$hasil."\n\n",FILE_APPEND);
-echo $hasil;
+	file_put_contents("log.txt",$result."\n\n",FILE_APPEND);
+echo $result;
 
 function sendPush($token,$secret,$time,$to, $message) {
+    global $firebasekey;
     $url = 'https://fcm.googleapis.com/fcm/send';
 
     $fields = array (
