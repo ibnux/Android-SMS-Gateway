@@ -74,7 +74,15 @@ public class BackgroundService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             Fungsi.log("BackgroundService BroadcastReceiver received");
-            LocalBroadcastManager.getInstance(BackgroundService.this).sendBroadcast(new Intent("MainActivity"));
+            if(intent.hasExtra("kill") && intent.getBooleanExtra("kill",false)){
+                Fungsi.log("BackgroundService KILL");
+                ((NotificationManager) Aplikasi.app.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+                intent = new Intent("MainActivity");
+                intent.putExtra("kill",true);
+                LocalBroadcastManager.getInstance(BackgroundService.this).sendBroadcast(intent);
+            }else {
+                LocalBroadcastManager.getInstance(BackgroundService.this).sendBroadcast(new Intent("MainActivity"));
+            }
         }
     };
 }

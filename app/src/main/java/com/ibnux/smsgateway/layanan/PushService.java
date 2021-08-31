@@ -119,8 +119,12 @@ public class PushService extends FirebaseMessagingService {
 
                 //cek dulu secret vs secret, jika oke, berarti tidak diHash, no expired
                 if(scrt.equals(secret)){
-                    Fungsi.sendSMS(to, message, this);
-                    writeLog("SEND SUCCESS: "  + to + " " + message,this);
+                    if(sp.getBoolean("gateway_on",true)) {
+                        Fungsi.sendSMS(to, message, this);
+                        writeLog("SEND SUCCESS: " + to + " " + message, this);
+                    }else{
+                        writeLog("GATEWAY OFF: " + to + " " + message, this);
+                    }
                 }else {
                     int expired = sp.getInt("expired", 3600);
                     if(TextUtils.isEmpty(time)) time = "0";
@@ -134,8 +138,12 @@ public class PushService extends FirebaseMessagingService {
                         scrt = Fungsi.md5(scrt.trim() + "" + time.trim());
                         Fungsi.log("MD5 : " + scrt);
                         if (scrt.toLowerCase().equals(secret.toLowerCase())) {
-                            Fungsi.sendSMS(to, message, this);
-                            writeLog("SEND SUCCESS: " + to + " " + message,this);
+                            if(sp.getBoolean("gateway_on",true)) {
+                                Fungsi.sendSMS(to, message, this);
+                                writeLog("SEND SUCCESS: " + to + " " + message, this);
+                            }else{
+                                writeLog("GATEWAY OFF: " + to + " " + message, this);
+                            }
                         } else {
                             writeLog("ERROR: SECRET INVALID : " + to + " " + message,this);
                         }

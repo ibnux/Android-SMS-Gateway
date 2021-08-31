@@ -32,7 +32,12 @@ public class SmsListener extends BroadcastReceiver {
                 Log.i("SMS Body", messageBody);
                 writeLog("SMS: RECEIVED : " + messageFrom + " " + messageBody,context);
                 if(url!=null){
-                    sendPOST(url, messageFrom, messageBody,"received",context);
+                    if(sp.getBoolean("gateway_on",true)) {
+                        sendPOST(url, messageFrom, messageBody,"received",context);
+                    }else{
+                        writeLog("GATEWAY OFF: SMS NOT POSTED TO SERVER", context);
+                    }
+
                 }else{
                     Log.i("SMS URL", "URL not SET");
                 }

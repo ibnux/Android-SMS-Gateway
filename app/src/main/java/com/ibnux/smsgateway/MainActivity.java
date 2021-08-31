@@ -11,12 +11,11 @@ import android.os.Handler;
 import android.text.InputType;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuItemCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -79,7 +78,9 @@ public class MainActivity extends AppCompatActivity {
             @Override public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {/* ... */}
         }).check();
         updateInfo();
-        checkServices();
+
+        if(getSharedPreferences("pref",0).getBoolean("gateway_on",true))
+            checkServices();
 
         recyclerview.setHasFixedSize(true);
         // use a linear layout manager
@@ -147,6 +148,25 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_gateway_switch);
+        View view = MenuItemCompat.getActionView(menuItem);
+        Switch switcha = view.findViewById(R.id.switchForActionBar);
+        switcha.setChecked(getSharedPreferences("pref",0).getBoolean("gateway_on",true));
+        switcha.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getSharedPreferences("pref",0).edit().putBoolean("gateway_on",isChecked).apply();
+                if(!isChecked){
+                    Intent intent = new Intent("BackgroundService");
+                    intent.putExtra("kill",true);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(intent);
+                    Toast.makeText(MainActivity.this,"Gateway OFF",Toast.LENGTH_LONG).show();
+                }else{
+                    checkServices();
+                    Toast.makeText(MainActivity.this,"Gateway ON",Toast.LENGTH_LONG).show();
+                }
+            }
+        });
         return true;
     }
 
@@ -273,7 +293,10 @@ public class MainActivity extends AppCompatActivity {
                 });
             else if(intent.hasExtra("newToken"))
                 updateInfo();
-            else
+            else if(intent.hasExtra("kill") && intent.getBooleanExtra("kill",false)){
+                Fungsi.log("BackgroundService KILLED");
+                serviceActive = false;
+            }else
                 serviceActive = true;
 
         }
