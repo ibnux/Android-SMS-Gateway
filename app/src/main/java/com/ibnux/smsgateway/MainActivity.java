@@ -9,10 +9,8 @@ import android.content.*;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerview;
     LogAdapter adapter;
     SwipeRefreshLayout swipe;
+    EditText editTextSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recyclerview = findViewById(R.id.recyclerview);
+        editTextSearch = findViewById(R.id.editTextSearch);
         swipe = findViewById(R.id.swipe);
         info = findViewById(R.id.text);
         info.setText("Click Me to Show Configuration");
@@ -99,6 +99,26 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+
+        editTextSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    recyclerview.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter.search(editTextSearch.getText().toString());
+                            editTextSearch.clearFocus();
+                        }
+                    });
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
     }
 
     public void updateInfo(){
