@@ -20,7 +20,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.ibnux.smsgateway.data.LogAdapter;
+import com.ibnux.smsgateway.data.LogLine;
+import com.ibnux.smsgateway.data.PaginationListener;
 import com.ibnux.smsgateway.layanan.BackgroundService;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -36,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     TextView info;
     String infoTxt = "";
     RecyclerView recyclerview;
+    LogAdapter adapter;
+    SwipeRefreshLayout swipe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +50,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recyclerview = findViewById(R.id.recyclerview);
+        swipe = findViewById(R.id.swipe);
         info = findViewById(R.id.text);
         info.setText("Click Me to Show Configuration");
         info.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 info.setText(infoTxt);
+            }
+        });
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                adapter.getNewData();
+                info.setText("Click Me to Show Configuration");
+                swipe.setRefreshing(false);
             }
         });
         Dexter.withActivity(this)
@@ -64,6 +80,25 @@ public class MainActivity extends AppCompatActivity {
         }).check();
         updateInfo();
         checkServices();
+
+        recyclerview.setHasFixedSize(true);
+        // use a linear layout manager
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerview.setLayoutManager(layoutManager);
+        adapter = new LogAdapter();
+        recyclerview.setAdapter(adapter);
+        adapter.reload();
+        recyclerview.addOnScrollListener(new PaginationListener(layoutManager) {
+            @Override
+            protected void loadMoreItems() {
+                recyclerview.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.nextData();
+                    }
+                });
+            }
+        });
     }
 
     public void updateInfo(){
@@ -148,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
                 return true;
-            case R.id.menu_change_secret:
+            case R.id.menu_set_url:
                 AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
                 builder2.setTitle("Change URL for receiving SMS");
                 builder2.setMessage("Data will send using POST with parameter number and message and type=received/sent/delivered");
@@ -163,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         String urlPost = input2.getText().toString();
                         getSharedPreferences("pref",0).edit().putString("urlPost", urlPost).commit();
-                        Toast.makeText(MainActivity.this,"Expired changed",Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this,"SERVER URL changed",Toast.LENGTH_LONG).show();
                     }
                 });
                 builder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -174,14 +209,15 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 builder2.show();
+                return true;
             case R.id.menu_clear_logs:
                 new AlertDialog.Builder(this)
                         .setTitle("Clear Logs")
                         .setMessage("Are you sure?")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                Fungsi.clearLogs(MainActivity.this);
-                                txtLogs.setText(Fungsi.readFile(MainActivity.this));
+                                ObjectBox.get().boxFor(LogLine.class).removeAll();
+                                adapter.reload();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)
@@ -209,7 +245,12 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Fungsi.log("BroadcastReceiver received");
             if(intent.hasExtra("newMessage"))
-                txtLogs.setText(Fungsi.readFile(MainActivity.this));
+                recyclerview.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.getNewData();
+                    }
+                });
             else if(intent.hasExtra("newToken"))
                 updateInfo();
             else

@@ -37,9 +37,9 @@ public class PushService extends FirebaseMessagingService {
                     break;
             }
             if(msg!=null) {
-                writeLog("DELIVERED: "+msg + " : " + arg1.getStringExtra("number"));
+                writeLog("DELIVERED: "+msg + " : " + arg1.getStringExtra("number"),arg0);
                 SmsListener.sendPOST(getSharedPreferences("pref",0).getString("urlPost",null),
-                        arg1.getStringExtra("number"), msg,"delivered");
+                        arg1.getStringExtra("number"), msg,"delivered",arg0);
                 Intent i = new Intent("MainActivity");
                 i.putExtra("newMessage","newMessage");
                 LocalBroadcastManager.getInstance(Aplikasi.app).sendBroadcast(i);
@@ -71,9 +71,9 @@ public class PushService extends FirebaseMessagingService {
             }
             if(msg!=null) {
                 Calendar cal = Calendar.getInstance();
-                writeLog("SENT: "+msg + " : " + arg1.getStringExtra("number"));
+                writeLog("SENT: "+msg + " : " + arg1.getStringExtra("number"),arg0);
                 SmsListener.sendPOST(getSharedPreferences("pref",0).getString("urlPost",null),
-                        arg1.getStringExtra("number"), msg,"sent");
+                        arg1.getStringExtra("number"), msg,"sent",arg0);
                 Intent i = new Intent("MainActivity");
                 i.putExtra("newMessage","newMessage");
                 LocalBroadcastManager.getInstance(Aplikasi.app).sendBroadcast(i);
@@ -104,57 +104,58 @@ public class PushService extends FirebaseMessagingService {
             String message = remoteMessage.getData().get("message");
             String secret = remoteMessage.getData().get("secret");
             String time  = "0";
-            if(remoteMessage.getData().containsKey(time)) {
+            if(remoteMessage.getData().containsKey("time")) {
                 time = remoteMessage.getData().get("time");
             }
             SharedPreferences sp = getSharedPreferences("pref",0);
             String scrt =  sp.getString("secret","");
-            Fungsi.log("Local Secret "+scrt);
-            Fungsi.log("received Secret "+secret);
-            Fungsi.log("Time "+time);
-            Fungsi.log("To "+to);
-            Fungsi.log("Message "+message);
+            Fungsi.log("Local Secret "+scrt+"\n"+
+                    "received Secret "+secret+"\n"+
+                    "Time "+time+"\n"+
+                    "To "+to+"\n"+
+                    "Message "+message);
 
             if(!TextUtils.isEmpty(to) && !TextUtils.isEmpty(message) && !TextUtils.isEmpty(secret)){
 
                 //cek dulu secret vs secret, jika oke, berarti tidak diHash, no expired
                 if(scrt.equals(secret)){
                     Fungsi.sendSMS(to, message, this);
-                    writeLog("SEND SUCCESS: "  + to + " " + message);
+                    writeLog("SEND SUCCESS: "  + to + " " + message,this);
                 }else {
                     int expired = sp.getInt("expired", 3600);
                     if(TextUtils.isEmpty(time)) time = "0";
-                    if (System.currentTimeMillis() - (Long.parseLong(time) * 1000L) < expired) {
+                    long current = System.currentTimeMillis()/1000L;
+                    long senttime = Long.parseLong(time);
+                    long timeout = current - senttime;
+                    Fungsi.log(current + " - " + senttime + " : " +expired + " > " + timeout);
+                    if (timeout < expired) {
                         //hash dulu
                         // ngikutin https://github.com/YOURLS/YOURLS/wiki/PasswordlessAPI
                         scrt = Fungsi.md5(scrt.trim() + "" + time.trim());
                         Fungsi.log("MD5 : " + scrt);
                         if (scrt.toLowerCase().equals(secret.toLowerCase())) {
                             Fungsi.sendSMS(to, message, this);
-                            writeLog("SEND SUCCESS: " + to + " " + message);
+                            writeLog("SEND SUCCESS: " + to + " " + message,this);
                         } else {
-                            writeLog("ERROR: SECRET INVALID : " + to + " " + message);
+                            writeLog("ERROR: SECRET INVALID : " + to + " " + message,this);
                         }
                     } else {
-                        writeLog("ERROR: TO MESSAGE AND SECRET REQUIRED : " + to + " " + message);
+                        writeLog("ERROR: TIMEOUT : " + current + " - " + senttime + " : " +expired + " > " + timeout+ " " + to + " " + message,this);
                     }
                 }
             }else{
-                writeLog("ERROR: TIMEOUT : " + to + " " + message);
+                writeLog("ERROR: TO MESSAGE AND SECRET REQUIRED : " + to + " " + message,this);
             }
         }else{
             if(remoteMessage.getData()!=null) {
-                writeLog("ERROR: NODATA : "+remoteMessage.getData().toString());
+                writeLog("ERROR: NODATA : "+remoteMessage.getData().toString(),this);
             }else{
-                writeLog("ERROR: NODATA : push received without data ");
+                writeLog("ERROR: NODATA : push received without data ",this);
             }
         }
-        Intent i = new Intent("MainActivity");
-        i.putExtra("newMessage","newMessage");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
 
-    static public void writeLog(String message){
+    static public void writeLog(String message, Context cx){
         if(logBox==null){
             logBox = ObjectBox.get().boxFor(LogLine.class);
         }
@@ -166,6 +167,10 @@ public class PushService extends FirebaseMessagingService {
                 cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND);
         ll.message = message;
         logBox.put(ll);
+        Intent i = new Intent("MainActivity");
+        i.putExtra("newMessage","newMessage");
+        if(cx==null) cx = Aplikasi.app;
+        LocalBroadcastManager.getInstance(cx).sendBroadcast(i);
     }
 
     @Override

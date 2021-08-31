@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -29,63 +30,86 @@ public class SmsListener extends BroadcastReceiver {
                 String messageBody = smsMessage.getMessageBody();
                 Log.i("SMS From", messageFrom);
                 Log.i("SMS Body", messageBody);
-                writeLog("SMS: RECEIVED : " + messageFrom + " " + messageBody);
+                writeLog("SMS: RECEIVED : " + messageFrom + " " + messageBody,context);
                 if(url!=null){
-                    sendPOST(url, messageFrom, messageBody,"received");
+                    sendPOST(url, messageFrom, messageBody,"received",context);
+                }else{
+                    Log.i("SMS URL", "URL not SET");
                 }
             }
         }
     }
 
-    public static void sendPOST(String urlPost,String from, String msg,String tipe){
-        if(urlPost==null) return;
-        if(from.isEmpty()) return;
-        try {
+    static class postDataTask extends AsyncTask<String, Void, String> {
+
+        private Exception exception;
+
+        protected String doInBackground(String... datas) {
             URL url;
             String response = "";
             try {
-                url = new URL(urlPost);
+                try {
+                    url = new URL(datas[0]);
 
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setReadTimeout(15000);
+                    conn.setConnectTimeout(15000);
+                    conn.setRequestMethod("POST");
+                    conn.setDoInput(true);
+                    conn.setDoOutput(true);
 
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(
-                        "number="+URLEncoder.encode(from, "UTF-8")+
-                                "&message="+URLEncoder.encode(msg, "UTF-8")+
-                                "&type="+URLEncoder.encode(tipe, "UTF-8")
-                );
+                    OutputStream os = conn.getOutputStream();
+                    BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(os, "UTF-8"));
+                    writer.write(datas[1]);
 
-                writer.flush();
-                writer.close();
-                os.close();
-                int responseCode=conn.getResponseCode();
+                    writer.flush();
+                    writer.close();
+                    os.close();
+                    int responseCode=conn.getResponseCode();
 
-                if (responseCode == HttpsURLConnection.HTTP_OK) {
-                    String line;
-                    BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    while ((line=br.readLine()) != null) {
-                        response+=line;
+                    if (responseCode == HttpsURLConnection.HTTP_OK) {
+                        String line;
+                        BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        while ((line=br.readLine()) != null) {
+                            response+=line;
+                        }
                     }
-                }
-                else {
-                    response="";
+                    else {
+                        response="";
 
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
+
+                return "SMS: POST : "+datas[0]+" : "+response;
+            }catch (Exception e){
                 e.printStackTrace();
+                return "SMS: POST FAILED : "+datas[0]+" : "+e.getMessage();
             }
+        }
 
-            writeLog("SMS: POST : "+urlPost+" : "+response);
+        @Override
+        protected void onPostExecute(String response) {
+            writeLog(response,null);
+        }
+    }
+
+
+    public static void sendPOST(String urlPost,String from, String msg,String tipe,Context context){
+        if(urlPost==null) return;
+        if(from.isEmpty()) return;
+        if(!urlPost.startsWith("http")) return;
+        try {
+            new postDataTask().execute(urlPost,
+                    "number="+URLEncoder.encode(from, "UTF-8")+
+                            "&message="+URLEncoder.encode(msg, "UTF-8")+
+                            "&type="+URLEncoder.encode(tipe, "UTF-8")
+            );
         }catch (Exception e){
             e.printStackTrace();
-            writeLog("SMS: POST FAILED : "+urlPost+" : "+e.getMessage());
+            writeLog("SMS: POST FAILED : "+urlPost+" : "+e.getMessage(),context);
         }
     }
 

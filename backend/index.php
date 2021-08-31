@@ -1,4 +1,20 @@
 <?php
+
+// RECEIVING MESSAGE
+$number = urldecode($_POST['number']);
+$message = urldecode($_POST['message']);
+// type = received / sent / delivered
+$type = urldecode($_POST['type']);
+
+if(!empty($number) && !empty($message) && !empty($type)){
+    // Process received SMS in here
+    // $type sent = success / Generic failure / No service / Null PDU / Radio off
+    // $type delivered = success / failed
+}
+
+
+// SENDING MESSAGE
+
 $to = urldecode($_REQUEST['to']);
 $text = urldecode($_REQUEST['text']);
 $secret = urldecode($_REQUEST['secret']);

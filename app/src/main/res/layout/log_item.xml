@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+            android:text="12 okt 1986 hh:ii:ss"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtDate"
+            android:textSize="10sp"/>
+
+    <TextView
+            android:text="Suatu log yang ditulis disini"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtMsg"
+            android:selectAllOnFocus="true"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"
+            android:linksClickable="true"
+            android:padding="1dp"
+            android:focusable="auto"
+            android:textIsSelectable="true"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+
+</LinearLayout>
