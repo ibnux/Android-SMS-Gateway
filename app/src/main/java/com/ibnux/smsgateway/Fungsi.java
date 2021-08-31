@@ -16,13 +16,8 @@ import android.os.Build;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
-
 import androidx.core.app.NotificationCompat;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -39,14 +34,14 @@ public class Fungsi {
 
         if (!TextUtils.isEmpty(number) && !TextUtils.isEmpty(message))
         {
-
+            int time = (int) System.currentTimeMillis()/1000;
             Intent is = new Intent(SENT);
             is.putExtra("number",number);
-            PendingIntent sentPI = PendingIntent.getBroadcast(cx, 0,
+            PendingIntent sentPI = PendingIntent.getBroadcast(cx, time,
                     is, 0);
             Intent id = new Intent(DELIVERED);
             id.putExtra("number",number);
-            PendingIntent deliveredPI = PendingIntent.getBroadcast(cx, 0,
+            PendingIntent deliveredPI = PendingIntent.getBroadcast(cx, time,
                     id, 0);
 
             try
@@ -114,56 +109,6 @@ public class Fungsi {
                 .setContentText("sent to "+to).setAutoCancel(true);
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(1, mBuilder.build());
-    }
-
-    public static void writeToFile(String data,Context context) {
-        try {
-            FileOutputStream stream = new FileOutputStream(new File(context.getCacheDir(), "sms.txt"),true);
-            try {
-                stream.write((data+"\n").getBytes());
-            } finally {
-                stream.close();
-            }
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
-
-    public static void clearLogs(Context context) {
-        try {
-            FileOutputStream stream = new FileOutputStream(new File(context.getCacheDir(), "sms.txt"));
-            try {
-                stream.write(("").getBytes());
-            } finally {
-                stream.close();
-            }
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
-
-    public static String readFile(Context context) {
-        try {
-            File file = new File(context.getCacheDir(), "sms.txt");
-            int length = (int) file.length();
-
-            byte[] bytes = new byte[length];
-
-            FileInputStream in = new FileInputStream(file);
-            try {
-                in.read(bytes);
-            } finally {
-                in.close();
-            }
-
-            return new String(bytes);
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-        return "";
     }
 
     public static void log(String txt){

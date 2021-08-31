@@ -4,21 +4,15 @@ package com.ibnux.smsgateway.layanan;
  * Created by Ibnu Maksum 2020
  */
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
+import android.app.*;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
-
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.ibnux.smsgateway.Aplikasi;
 import com.ibnux.smsgateway.Fungsi;
 import com.ibnux.smsgateway.MainActivity;
@@ -48,7 +42,7 @@ public class BackgroundService extends Service {
         NotificationManager mNotificationManager = (NotificationManager) Aplikasi.app.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if(Build.VERSION.SDK_INT>25) {
-            NotificationChannel androidChannel = new NotificationChannel("com.ibnux.smsgateway.bg",
+            NotificationChannel androidChannel = new NotificationChannel("Push Listener",
                     "Background", NotificationManager.IMPORTANCE_LOW);
             androidChannel.enableLights(false);
             androidChannel.enableVibration(false);
@@ -59,7 +53,7 @@ public class BackgroundService extends Service {
 
         PendingIntent contentIntent = PendingIntent.getActivity(Aplikasi.app, 0, new Intent(Aplikasi.app, MainActivity.class), 0);
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(Aplikasi.app,"com.ibnux.smsgateway")
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(Aplikasi.app,"Push Listener")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(Aplikasi.app.getText(R.string.app_name))
                 .setOngoing(true)

@@ -19,7 +19,7 @@ public class Aplikasi extends Application {
     public void onCreate() {
         super.onCreate();
         this.app = this;
-
+        ObjectBox.init(this);
         sp = getSharedPreferences("pref",0);
         secret = sp.getString("secret",null);
         if(secret==null){

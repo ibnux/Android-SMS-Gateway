@@ -5,27 +5,22 @@ package com.ibnux.smsgateway;
  */
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
+import androidx.recyclerview.widget.RecyclerView;
 import com.ibnux.smsgateway.layanan.BackgroundService;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -38,22 +33,30 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private boolean serviceActive = false;
-    TextView txtLogs,info;
+    TextView info;
+    String infoTxt = "";
+    RecyclerView recyclerview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        txtLogs = findViewById(R.id.txtLogs);
-        txtLogs.setText(Fungsi.readFile(this));
-
+        recyclerview = findViewById(R.id.recyclerview);
+        info = findViewById(R.id.text);
+        info.setText("Click Me to Show Configuration");
+        info.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                info.setText(infoTxt);
+            }
+        });
         Dexter.withActivity(this)
                 .withPermissions(
                         Manifest.permission.RECEIVE_BOOT_COMPLETED,
                         Manifest.permission.GET_ACCOUNTS,
                         Manifest.permission.SEND_SMS,
+                        Manifest.permission.RECEIVE_SMS,
                         Manifest.permission.WAKE_LOCK
                 ).withListener(new MultiplePermissionsListener() {
             @Override public void onPermissionsChecked(MultiplePermissionsReport report) {/* ... */}
@@ -65,11 +68,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateInfo(){
         SharedPreferences sp = getSharedPreferences("pref",0);
-        info = findViewById(R.id.text);
-        info.setText("Your Secret \n\n"+sp.getString("secret",null)+
+        infoTxt = "Your Secret \n\n"+sp.getString("secret",null)+
                 "\n\nYour Device ID \n\n"+
-                sp.getString("token",null)+
-                "\n\nhttps://sms.ibnux.net\n");
+                sp.getString("token","Close and open again app, to get token")+
+                "\n\nhttps://sms.ibnux.net\n";
     }
 
     public void checkServices(){
@@ -146,9 +148,35 @@ public class MainActivity extends AppCompatActivity {
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
                 return true;
+            case R.id.menu_change_secret:
+                AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+                builder2.setTitle("Change URL for receiving SMS");
+                builder2.setMessage("Data will send using POST with parameter number and message and type=received/sent/delivered");
+                final EditText input2 = new EditText(this);
+                input2.setText(getSharedPreferences("pref",0).getString("urlPost",""));
+                input2.setHint("https://sms.ibnux.net");
+                input2.setMaxLines(1);
+                input2.setInputType(InputType.TYPE_TEXT_VARIATION_URI | InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT);
+                builder2.setView(input2);
+                builder2.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String urlPost = input2.getText().toString();
+                        getSharedPreferences("pref",0).edit().putString("urlPost", urlPost).commit();
+                        Toast.makeText(MainActivity.this,"Expired changed",Toast.LENGTH_LONG).show();
+                    }
+                });
+                builder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder2.show();
             case R.id.menu_clear_logs:
                 new AlertDialog.Builder(this)
-                        .setTitle("Clear All Logs")
+                        .setTitle("Clear Logs")
                         .setMessage("Are you sure?")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
