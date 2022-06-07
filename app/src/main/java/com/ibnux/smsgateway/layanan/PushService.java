@@ -113,6 +113,8 @@ public class PushService extends FirebaseMessagingService {
             if(msg!=null && !msg.equals("success")){
                 int retry = arg1.getIntExtra("retry",0);
                 if(retry<3){
+                    PushService.writeLog("SENT FAILED: " + msg, context);
+                    PushService.writeLog("RETRY SEND SMS in 10s #" + (retry+1), context);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
