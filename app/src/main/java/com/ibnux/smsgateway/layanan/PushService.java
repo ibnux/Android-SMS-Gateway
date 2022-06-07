@@ -108,6 +108,28 @@ public class PushService extends FirebaseMessagingService {
                     msg = "Radio off";
                     break;
             }
+
+            // RETRY AFTER 10 SECOND IF FAILED UNTIL 3 TIMES
+            if(msg!=null && !msg.equals("success")){
+                int retry = arg1.getIntExtra("retry",0);
+                if(retry<3){
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            String number = arg1.getStringExtra("number");
+                            int simID = arg1.getIntExtra("simID",0);
+                            String centerNum = arg1.getStringExtra("centerNum");
+                            String smsText = arg1.getStringExtra("smsText");
+                            int retry = arg1.getIntExtra("retry",0);
+                            retry++;
+                            SimUtil.sendSMS(context,simID,number,centerNum,smsText,retry);
+                        }
+                    }, 10000);
+
+                    return;
+                }
+            }
+
             if (msg != null) {
                 Calendar cal = Calendar.getInstance();
                 writeLog("SENT: " + msg + " : " + arg1.getStringExtra("number"), arg0);
@@ -241,12 +263,8 @@ public class PushService extends FirebaseMessagingService {
                 if (messageList.size() > 1) {
                     sukses = SimUtil.sendMultipartTextSMS(this, simNumber - 1, to, null, messageList);
                 } else {
-                    sukses = SimUtil.sendSMS(this, simNumber - 1, to, null, message);
+                    sukses = SimUtil.sendSMS(this, simNumber - 1, to, null, message, 0);
                 }
-//                if(!sukses){
-//                    Fungsi.log("Try sending using internal API");
-//                    Fungsi.sendSMS(to, message, this);
-//                }
             } else {
                 Fungsi.sendSMS(to, message, this);
             }

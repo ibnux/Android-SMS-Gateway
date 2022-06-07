@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SimUtil {
 
-    public static boolean sendSMS(Context ctx, int simID, String toNum, String centerNum, String smsText) {
+    public static boolean sendSMS(Context ctx, int simID, String toNum, String centerNum, String smsText, int retry) {
         String name;
 
         try {
@@ -39,10 +39,18 @@ public class SimUtil {
 
             Intent is = new Intent(Fungsi.SENT);
             is.putExtra("number",toNum);
+            is.putExtra("centerNum",centerNum);
+            is.putExtra("simID",simID);
+            is.putExtra("smsText",smsText);
+            is.putExtra("retry",retry);
             PendingIntent sentPI = PendingIntent.getBroadcast(ctx, time,
                     is, 0);
             Intent id = new Intent(Fungsi.DELIVERED);
-            id.putExtra("number",toNum);
+            is.putExtra("number",toNum);
+            is.putExtra("centerNum",centerNum);
+            is.putExtra("simID",simID);
+            is.putExtra("smsText",smsText);
+            is.putExtra("retry",retry);
             PendingIntent deliveredPI = PendingIntent.getBroadcast(ctx, time,
                     id, 0);
 
@@ -124,17 +132,25 @@ public class SimUtil {
             String sms = "";
             for(int n=0;n<smsTextlist.size();n++) {
                 int time = (int) System.currentTimeMillis()/1000;
+                sms += smsTextlist.get(n);
 
                 Intent is = new Intent(Fungsi.SENT);
-                is.putExtra("number", toNum);
+                is.putExtra("number",toNum);
+                is.putExtra("centerNum",centerNum);
+                is.putExtra("simID",simID);
+                is.putExtra("smsText",sms);
+                is.putExtra("retry",0);
                 sentIntentList.add(PendingIntent.getBroadcast(ctx, time+n,
                         is, 0));
 
                 Intent id = new Intent(Fungsi.DELIVERED);
-                id.putExtra("number", toNum);
+                is.putExtra("number",toNum);
+                is.putExtra("centerNum",centerNum);
+                is.putExtra("simID",simID);
+                is.putExtra("smsText",sms);
+                is.putExtra("retry",0);
                 deliveryIntentList.add(PendingIntent.getBroadcast(ctx, time+n,
                         id, 0));
-                sms += smsTextlist.get(n);
             }
 
             method = Class.forName("com.android.internal.telephony.ISms$Stub").getDeclaredMethod("asInterface", IBinder.class);

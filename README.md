@@ -36,6 +36,7 @@ to compile yourself, you need your own Firebase
 - DELIVERED NOTIFICATION to SERVER
 - USSD
 - MULTIPLE SIMCARD
+- RETRY SMS FAILED TO SENT 3 TIMES
 
 ## USSD Request
 
