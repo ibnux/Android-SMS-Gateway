@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-      xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-            android:id="@+id/menu_gateway_switch"
-            android:title="SMS Active"
-            app:showAsAction="always"
-            app:actionLayout="@layout/switch_item"/>
+        android:id="@+id/menu_gateway_switch"
+        android:title="SMS Active"
+        app:showAsAction="always"
+        app:actionLayout="@layout/switch_item"/>
     <item
         android:id="@+id/menu_change_expired"
         android:title="Change expired" />
@@ -15,10 +15,23 @@
         android:title="Change Secret" />
 
     <item
-            android:id="@+id/menu_set_url"
-            android:title="Set SMS receiver server" />
+        android:id="@+id/menu_set_url"
+        android:title="Set SMS receiver server" />
 
     <item
         android:id="@+id/menu_clear_logs"
         android:title="Clear Logs" />
+
+    <item
+        android:id="@+id/menu_battery_optimization"
+        android:title="Disable Battery optimization" />
+
+    <item
+        android:id="@+id/menu_ussd_set"
+        android:title="USSD Permission" />
+
+    <item
+        android:id="@+id/menu_ussd_test"
+        android:title="Test USSD" />
+
 </menu>

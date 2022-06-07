@@ -34,6 +34,28 @@ to compile yourself, you need your own Firebase
 - RECEIVE SMS to SERVER
 - SENT NOTIFICATION to SERVER
 - DELIVERED NOTIFICATION to SERVER
+- USSD
+- MULTIPLE SIMCARD
+
+## USSD Request
+
+Not all phone and carrier work with this, this feature need accessibility to read message and auto close USSD dialog, but some device failed to close Dialog, i use samsung S10 Lite and it cannot close dialog
+
+## MULTIPLE SIMCARD
+
+i think not all phone will work too, because of different of API for some OS which vendor has modification
+
+# Install on your own Server?
+
+You need to understand how to build android Apps, and compile your own version.
+
+Create Firebase project, add apps to project to get google-services.json
+
+Add server key to **backend** script
+
+You will see MyObjectBox error, just build it once, it will create automatically, read in [here](https://docs.objectbox.io/getting-started#generate-objectbox-code)
+
+***
 
 ## Traktir @ibnux
 

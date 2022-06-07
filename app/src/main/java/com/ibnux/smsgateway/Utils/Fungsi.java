@@ -1,8 +1,10 @@
-package com.ibnux.smsgateway;
+package com.ibnux.smsgateway.Utils;
 
 /**
  * Created by Ibnu Maksum 2020
  */
+
+import static android.content.ContentValues.TAG;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -11,18 +13,26 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
+
+import com.ibnux.smsgateway.Aplikasi;
+import com.ibnux.smsgateway.MainActivity;
+import com.ibnux.smsgateway.R;
+import com.ibnux.smsgateway.layanan.PushService;
+import com.ibnux.smsgateway.layanan.UssdService;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-
-import static android.content.ContentValues.TAG;
+import java.util.List;
 
 public class Fungsi {
     private static NotificationManager mNotificationManager;
@@ -77,10 +87,12 @@ public class Fungsi {
                 values.put("body", message);
                 Aplikasi.app.getContentResolver()
                         .insert(Uri.parse("content://sms/sent"), values);
+                PushService.writeLog("SUBMIT SMS SUCCESS: " + number, cx);
             }
             catch (Exception ex)
             {
-                Log.e(TAG, ex.toString());
+                ex.printStackTrace();
+                PushService.writeLog("SEND FAILED: " + number + " " + message+"\n\n"+ex.getMessage(), cx);
             }
         }
     }
@@ -147,4 +159,83 @@ public class Fungsi {
         }
         return "";
     }
+
+    public static boolean isAccessibilitySettingsOn(Context mContext) {
+        int accessibilityEnabled = 0;
+        final String service = mContext.getPackageName() + "/" + UssdService.class.getCanonicalName();
+        log("USSD",service);
+        try {
+            accessibilityEnabled = Settings.Secure.getInt(
+                    mContext.getApplicationContext().getContentResolver(),
+                    android.provider.Settings.Secure.ACCESSIBILITY_ENABLED);
+            Log.v("USSD", "accessibilityEnabled = " + accessibilityEnabled);
+        } catch (Settings.SettingNotFoundException e) {
+            Log.e("USSD", "Error finding setting, default accessibility to not found: "
+                    + e.getMessage());
+        }
+        TextUtils.SimpleStringSplitter mStringColonSplitter = new TextUtils.SimpleStringSplitter(':');
+
+        if (accessibilityEnabled == 1) {
+            Log.v("USSD", "***ACCESSIBILITY IS ENABLED*** -----------------");
+            String settingValue = Settings.Secure.getString(
+                    mContext.getApplicationContext().getContentResolver(),
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+            if (settingValue != null) {
+                mStringColonSplitter.setString(settingValue);
+                while (mStringColonSplitter.hasNext()) {
+                    String accessibilityService = mStringColonSplitter.next();
+
+                    Log.v("USSD", "-------------- > accessibilityService :: " + accessibilityService + " " + service);
+                    if (accessibilityService.equalsIgnoreCase(service)) {
+                        Log.v("USSD", "We've found the correct setting - accessibility is switched on!");
+                        return true;
+                    }
+                }
+            }
+        } else {
+            Log.v("USSD", "***ACCESSIBILITY IS DISABLED***");
+        }
+
+        return false;
+    }
+
+    public static Uri ussdToCallableUri(String ussd) {
+
+        String uriString = "";
+
+        if(!ussd.startsWith("tel:"))
+            uriString += "tel:";
+
+        for(char c : ussd.toCharArray()) {
+
+            if(c == '#')
+                uriString += Uri.encode("#");
+            else
+                uriString += c;
+        }
+
+        return Uri.parse(uriString);
+    }
+
+    public static List<SimInfo> getSIMInfo(Context context) {
+        List<SimInfo> simInfoList = new ArrayList<>();
+        Uri URI_TELEPHONY = Uri.parse("content://telephony/siminfo/");
+        Cursor c = context.getContentResolver().query(URI_TELEPHONY, null, null, null, null);
+        if (c.moveToFirst()) {
+            do {
+                int id = c.getInt(c.getColumnIndex("_id"));
+                int slot = c.getInt(c.getColumnIndex("slot"));
+                String display_name = c.getString(c.getColumnIndex("display_name"));
+                String icc_id = c.getString(c.getColumnIndex("icc_id"));
+                SimInfo simInfo = new SimInfo(id, display_name, icc_id, slot);
+                Log.d("apipas_sim_info", simInfo.toString());
+                simInfoList.add(simInfo);
+            } while (c.moveToNext());
+        }
+        c.close();
+
+        return simInfoList;
+    }
+
+
 }

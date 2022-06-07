@@ -4,19 +4,25 @@ package com.ibnux.smsgateway.layanan;
  * Created by Ibnu Maksum 2020
  */
 
-import android.app.*;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
+
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.ibnux.smsgateway.Aplikasi;
-import com.ibnux.smsgateway.Fungsi;
 import com.ibnux.smsgateway.MainActivity;
 import com.ibnux.smsgateway.R;
+import com.ibnux.smsgateway.Utils.Fungsi;
 
 public class BackgroundService extends Service {
 

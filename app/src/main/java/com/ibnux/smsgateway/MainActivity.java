@@ -5,13 +5,30 @@ package com.ibnux.smsgateway;
  */
 
 import android.Manifest;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.InputType;
-import android.view.*;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.*;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,10 +37,14 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.ibnux.smsgateway.Utils.Fungsi;
 import com.ibnux.smsgateway.data.LogAdapter;
 import com.ibnux.smsgateway.data.LogLine;
 import com.ibnux.smsgateway.data.PaginationListener;
 import com.ibnux.smsgateway.layanan.BackgroundService;
+import com.ibnux.smsgateway.layanan.PushService;
+import com.ibnux.smsgateway.layanan.UssdService;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -66,17 +87,43 @@ public class MainActivity extends AppCompatActivity {
                 swipe.setRefreshing(false);
             }
         });
-        Dexter.withActivity(this)
+        Dexter.withContext(this)
                 .withPermissions(
                         Manifest.permission.RECEIVE_BOOT_COMPLETED,
                         Manifest.permission.GET_ACCOUNTS,
                         Manifest.permission.SEND_SMS,
                         Manifest.permission.RECEIVE_SMS,
-                        Manifest.permission.WAKE_LOCK
+                        Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.WAKE_LOCK,
+                        Manifest.permission.ACCESS_NETWORK_STATE,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                        Manifest.permission.CALL_PHONE
                 ).withListener(new MultiplePermissionsListener() {
-            @Override public void onPermissionsChecked(MultiplePermissionsReport report) {/* ... */}
-            @Override public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {/* ... */}
-        }).check();
+                    @Override public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        if(report.areAllPermissionsGranted()){
+                            Fungsi.log("All Permission granted");
+                        }else if(report.isAnyPermissionPermanentlyDenied()){
+                            Fungsi.log("Some Permission not granted");
+                        }
+                        Dexter.withContext(MainActivity.this)
+                                .withPermissions(
+                                        Manifest.permission.SEND_SMS,
+                                        Manifest.permission.RECEIVE_SMS
+                                ).withListener(new MultiplePermissionsListener() {
+                                    @Override public void onPermissionsChecked(MultiplePermissionsReport report) {
+                                        if(report.areAllPermissionsGranted()){
+                                            Fungsi.log("All SMS Permission granted");
+                                        }else if(report.isAnyPermissionPermanentlyDenied()){
+                                            Fungsi.log("Some Permission not granted");
+                                        }
+                                    }
+                                    @Override public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {/* ... */}
+                                }).check();
+                    }
+                    @Override public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {/* ... */}
+                }).check();
         updateInfo();
 
         if(getSharedPreferences("pref",0).getBoolean("gateway_on",true))
@@ -102,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        startService(new Intent(this, UssdService.class));
+
         editTextSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -126,8 +175,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences("pref",0);
         infoTxt = "Your Secret \n\n"+sp.getString("secret",null)+
                 "\n\nYour Device ID \n\n"+
-                sp.getString("token","Close and open again app, to get token")+
-                "\n\nhttps://sms.ibnux.net\n";
+                sp.getString("token","Pull to refresh again, to get token")+"\n";
     }
 
     public void checkServices(){
@@ -226,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_set_url:
                 AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
                 builder2.setTitle("Change URL for receiving SMS");
-                builder2.setMessage("Data will send using POST with parameter number and message and type=received/sent/delivered");
+                builder2.setMessage("Data will send using POST with parameter number and message and type=received/sent/delivered/ussd");
                 final EditText input2 = new EditText(this);
                 input2.setText(getSharedPreferences("pref",0).getString("urlPost",""));
                 input2.setHint("https://sms.ibnux.net");
@@ -264,8 +312,47 @@ public class MainActivity extends AppCompatActivity {
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
                 return true;
+            case R.id.menu_ussd_set:
+                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                startActivity(intent);
+//              Toast.makeText(this,"Sudah Aktif",Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.menu_ussd_test:
+                callUssd();
+                return true;
+            case R.id.menu_battery_optimization:
+                startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:"+BuildConfig.APPLICATION_ID)));
+                return true;
         }
         return false;
+    }
+
+    public void callUssd(){
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+        builder2.setTitle("SEND USSD");
+        final EditText input2 = new EditText(this);
+        input2.setText("*888#");
+        input2.setHint("*888#");
+        input2.setMaxLines(1);
+        builder2.setView(input2);
+        builder2.setPositiveButton("Call USSD", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String ussd = input2.getText().toString();
+                Log.d("ussd","tel:"+ussd);
+                if(PushService.context==null)
+                    PushService.context = Aplikasi.app;
+                PushService.antriUssd(ussd,1);
+            }
+        });
+        builder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder2.show();
     }
 
     @Override

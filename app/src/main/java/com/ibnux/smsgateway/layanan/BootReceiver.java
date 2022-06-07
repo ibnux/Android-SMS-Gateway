@@ -15,6 +15,7 @@ public class BootReceiver extends BroadcastReceiver {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             Intent serviceIntent = new Intent(context, BackgroundService.class);
             context.startService(serviceIntent);
+            context.startService(new Intent(context, UssdService.class));
         }
     }
 }

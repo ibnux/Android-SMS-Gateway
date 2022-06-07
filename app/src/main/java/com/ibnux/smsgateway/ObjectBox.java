@@ -1,7 +1,9 @@
 package com.ibnux.smsgateway;
 
 import android.content.Context;
+
 import com.ibnux.smsgateway.data.MyObjectBox;
+
 import io.objectbox.BoxStore;
 
 public class ObjectBox {

@@ -3,13 +3,14 @@
 // RECEIVING MESSAGE
 $number = urldecode($_POST['number']);
 $message = urldecode($_POST['message']);
-// type = received / sent / delivered
+// type = received / sent / delivered / USSD
 $type = urldecode($_POST['type']);
 
 if(!empty($number) && !empty($message) && !empty($type)){
     // Process received SMS in here
     // $type sent = success / Generic failure / No service / Null PDU / Radio off
     // $type delivered = success / failed
+    die('DONE');
 }
 
 
@@ -19,6 +20,7 @@ $to = urldecode($_REQUEST['to']);
 $text = urldecode($_REQUEST['text']);
 $secret = urldecode($_REQUEST['secret']);
 $token = urldecode($_REQUEST['deviceID']);
+$sim = urldecode($_REQUEST['sim'])*1;
 //Time required if you use MD5
 $time = $_REQUEST['time'];
 
@@ -37,13 +39,13 @@ if(empty($to) || empty($text) || empty($secret) || empty($token)){
     die();
 }
 
-$result = sendPush($token,$secret,$time,$to, $text);
+$result = sendPush($token,$secret,$time,$to, $text, $sim);
 
 if(isset($_GET['debug']) && count($_REQUEST)>1)
 	file_put_contents("log.txt",$result."\n\n",FILE_APPEND);
 echo $result;
 
-function sendPush($token,$secret,$time,$to, $message) {
+function sendPush($token, $secret, $time, $to, $message, $sim=0) {
     global $firebasekey;
     $url = 'https://fcm.googleapis.com/fcm/send';
 
@@ -54,6 +56,7 @@ function sendPush($token,$secret,$time,$to, $message) {
                 "time" => $time,
                 "secret" => $secret,
                 "message" => $message,
+                "sim" => $sim,
             )
     );
     $fields = json_encode ( $fields );
