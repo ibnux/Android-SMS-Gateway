@@ -224,7 +224,7 @@ public class PushService extends FirebaseMessagingService {
                 Fungsi.log("USSD to " + to + " sim " + simNumber);
                 writeLog(messageId + " QUEUE USSD: " + to + " SIM " + simNumber, this);
 
-                antriUssd(to,(simNumber == 0) ? 1 : simNumber);
+                queueUssd(to,(simNumber == 0) ? 1 : simNumber);
             } else {
                 Fungsi.log("not end with #");
                 writeLog("USSD not end with # : " + to, this);
@@ -253,8 +253,8 @@ public class PushService extends FirebaseMessagingService {
         }
     }
 
-    public static void antriUssd(String to, int simNumber){
-        Fungsi.log("antriUssd "+to+" "+simNumber);
+    public static void queueUssd(String to, int simNumber){
+        Fungsi.log("queueUssd "+to+" "+simNumber);
         UssdData data = new UssdData();
         data.to = to;
         data.sim = simNumber;

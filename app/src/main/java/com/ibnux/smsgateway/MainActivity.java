@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("ussd","tel:"+ussd);
                 if(PushService.context==null)
                     PushService.context = Aplikasi.app;
-                PushService.antriUssd(ussd,1);
+                PushService.queueUssd(ussd,1);
             }
         });
         builder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
