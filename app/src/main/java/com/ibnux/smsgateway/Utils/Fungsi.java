@@ -13,6 +13,7 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -53,7 +54,9 @@ public class Fungsi {
             id.putExtra("number",number);
             PendingIntent deliveredPI = PendingIntent.getBroadcast(cx, time,
                     id, 0);
-
+            //Log SMS
+            SharedPreferences spl = cx.getSharedPreferences("logs",0);
+            spl.edit().putInt("sim1", spl.getInt("sim1",0)+1).apply();
             try
             {
                 SmsManager smsManager = SmsManager.getDefault();

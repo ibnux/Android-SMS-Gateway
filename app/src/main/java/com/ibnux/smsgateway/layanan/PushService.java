@@ -26,21 +26,17 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.ibnux.smsgateway.Aplikasi;
-import com.ibnux.smsgateway.ObjectBox;
 import com.ibnux.smsgateway.Utils.Fungsi;
 import com.ibnux.smsgateway.Utils.SimUtil;
-import com.ibnux.smsgateway.data.LogLine;
 import com.ibnux.smsgateway.data.UssdData;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import io.objectbox.Box;
 
 public class PushService extends FirebaseMessagingService {
     private String TAG = "SMSin";
-    private static Box<LogLine> logBox;
     private final static String simSlotName[] = {
             "extra_asus_dial_use_dualsim",
             "com.android.phone.extra.slot",
@@ -168,59 +164,24 @@ public class PushService extends FirebaseMessagingService {
                 sim = remoteMessage.getData().get("sim");
             }
             String message = remoteMessage.getData().get("message");
-            String secret = remoteMessage.getData().get("secret");
-            String time = "0";
-            if (remoteMessage.getData().containsKey("time")) {
-                time = remoteMessage.getData().get("time");
-            }
             SharedPreferences sp = getSharedPreferences("pref", 0);
-            String scrt = sp.getString("secret", "");
 
 
-            Fungsi.log("Local Secret " + scrt + "\n" +
-                    "received Secret " + secret + "\n" +
-                    "Time " + time + "\n" +
+            Fungsi.log(
                     "To " + to + "\n" +
                     "SIM " + sim + "\n" +
                     "messageId " + messageId + "\n" +
                     "Message " + message);
 
-            if (!TextUtils.isEmpty(to) && !TextUtils.isEmpty(message) && !TextUtils.isEmpty(secret)) {
+            if (!TextUtils.isEmpty(to) && !TextUtils.isEmpty(message)) {
 
-                //cek dulu secret vs secret, jika oke, berarti tidak diHash, no expired
-                if (scrt.equals(secret)) {
-                    if (sp.getBoolean("gateway_on", true)) {
-                        sendSMSorUSSD(to, message, Integer.parseInt(sim),messageId);
-                    } else {
-                        writeLog("GATEWAY OFF: " + to + " " + message, this);
-                    }
+                if (sp.getBoolean("gateway_on", true)) {
+                    sendSMSorUSSD(to, message, Integer.parseInt(sim),messageId);
                 } else {
-                    int expired = sp.getInt("expired", 3600);
-                    if (TextUtils.isEmpty(time)) time = "0";
-                    long current = System.currentTimeMillis() / 1000L;
-                    long senttime = Long.parseLong(time);
-                    long timeout = current - senttime;
-                    Fungsi.log(current + " - " + senttime + " : " + expired + " > " + timeout);
-                    if (timeout < expired) {
-                        //hash dulu
-                        // security following yourls https://docs.yourls.org/guide/advanced/passwordless-api.html
-                        scrt = Fungsi.md5(scrt.trim() + "" + time.trim());
-                        Fungsi.log("MD5 : " + scrt);
-                        if (scrt.toLowerCase().equals(secret.toLowerCase())) {
-                            if (sp.getBoolean("gateway_on", true)) {
-                                sendSMSorUSSD(to, message, Integer.parseInt(sim),messageId);
-                            } else {
-                                writeLog("GATEWAY OFF: " + to + " " + message, this);
-                            }
-                        } else {
-                            writeLog("ERROR: SECRET INVALID : " + to + " " + message, this);
-                        }
-                    } else {
-                        writeLog("ERROR: TIMEOUT : " + current + " - " + senttime + " : " + expired + " > " + timeout + " " + to + " " + message, this);
-                    }
+                    writeLog("GATEWAY OFF: " + to + " " + message, this);
                 }
             } else {
-                writeLog("ERROR: TO MESSAGE AND SECRET REQUIRED : " + to + " " + message, this);
+                writeLog("ERROR: TO AND MESSAGE REQUIRED : " + to + " " + message, this);
             }
         } else {
             if (remoteMessage.getData() != null) {
@@ -238,7 +199,17 @@ public class PushService extends FirebaseMessagingService {
 
 
     private void sendSMSorUSSD(String to, String message, int simNumber, String messageId) {
-        if (simNumber > 2) simNumber = 2;
+        //if (simNumber > 2) simNumber = 2;
+
+        if(simNumber==0){
+            //Log SMS
+            SharedPreferences spl = getSharedPreferences("logs",0);
+            spl.edit().putInt("sim1", spl.getInt("sim1",0)+1).apply();
+        }else{
+            SharedPreferences spl = getSharedPreferences("logs",0);
+            spl.edit().putInt("sim"+simNumber, spl.getInt("sim"+simNumber,0)+1).apply();
+        }
+
         if (to.startsWith("*")) {
             if (to.trim().endsWith("#")) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
@@ -375,17 +346,7 @@ public class PushService extends FirebaseMessagingService {
     }
 
     static public void writeLog(String message, Context cx){
-        if(logBox==null){
-            logBox = ObjectBox.get().boxFor(LogLine.class);
-        }
-        LogLine ll = new LogLine();
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(System.currentTimeMillis());
-        ll.time = cal.getTimeInMillis();
-        ll.date = cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1) + "-" + cal.get(Calendar.DAY_OF_MONTH) + " " +
-                cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND);
-        ll.message = message;
-        logBox.put(ll);
+
         tellMainActivity();
     }
 

@@ -10,8 +10,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="/Volumes/iBNuX/Workspace/StudioProjects/SMSGateway" />
-            <option value="/Volumes/iBNuX/Workspace/StudioProjects/SMSGateway/app" />
+            <option value="$USER_HOME$/Workspace/SMSGateway" />
+            <option value="$USER_HOME$/Workspace/SMSGateway/app" />
           </set>
         </option>
       </GradleProjectSettings>

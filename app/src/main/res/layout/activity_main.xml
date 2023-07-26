@@ -26,23 +26,6 @@
                     android:text="Hello World!"
                     android:textIsSelectable="true"/>
 
-            <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPersonName"
-                    android:ems="10"
-                    android:id="@+id/editTextSearch"
-                    android:hint="@android:string/search_go"
-                    android:autofillHints=""
-                    android:textSize="12sp"
-                    android:imeOptions="actionSearch"
-                    android:selectAllOnFocus="true"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-
         </LinearLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

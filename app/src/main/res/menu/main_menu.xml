@@ -7,20 +7,10 @@
         android:title="SMS Active"
         app:showAsAction="always"
         app:actionLayout="@layout/switch_item"/>
-    <item
-        android:id="@+id/menu_change_expired"
-        android:title="Change expired" />
-    <item
-        android:id="@+id/menu_change_secret"
-        android:title="Change Secret" />
 
     <item
         android:id="@+id/menu_set_url"
         android:title="Set SMS receiver server" />
-
-    <item
-        android:id="@+id/menu_clear_logs"
-        android:title="Clear Logs" />
 
     <item
         android:id="@+id/menu_battery_optimization"
