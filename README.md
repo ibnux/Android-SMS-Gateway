@@ -56,6 +56,10 @@ Add server key to **backend** script
 
 You will see MyObjectBox error, just build it once, it will create automatically, read in [here](https://docs.objectbox.io/getting-started#generate-objectbox-code)
 
+## MQTT VERSION
+
+https://github.com/ibnux/Android-SMS-Gateway-MQTT/
+
 ***
 
 ## Traktir @ibnux
