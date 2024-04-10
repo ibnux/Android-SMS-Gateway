@@ -33,12 +33,13 @@ public class SmsListener extends BroadcastReceiver {
             for (SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
                 String messageFrom = smsMessage.getOriginatingAddress();
                 String messageBody = smsMessage.getMessageBody();
+                String messageTimestamp = smsMessage.getTimestampMillis().toString();
                 Log.i("SMS From", messageFrom);
                 Log.i("SMS Body", messageBody);
                 writeLog("SMS: RECEIVED : " + messageFrom + " " + messageBody,context);
                 if(url!=null){
                     if(sp.getBoolean("gateway_on",true)) {
-                        sendPOST(url, messageFrom, messageBody,"received",context);
+                        sendPOST(url, messageFrom, messageBody,"received",context,messageTimestamp);
                     }else{
                         writeLog("GATEWAY OFF: SMS NOT POSTED TO SERVER", context);
                     }
@@ -107,7 +108,7 @@ public class SmsListener extends BroadcastReceiver {
     }
 
 
-    public static void sendPOST(String urlPost,String from, String msg,String tipe,Context context){
+    public static void sendPOST(String urlPost,String from, String msg,String tipe,Context context,String msgTimestamp){
         if(urlPost==null) return;
         if(from.isEmpty()) return;
         if(!urlPost.startsWith("http")) return;
@@ -115,7 +116,8 @@ public class SmsListener extends BroadcastReceiver {
             new postDataTask().execute(urlPost,
                     "number="+URLEncoder.encode(from, "UTF-8")+
                             "&message="+URLEncoder.encode(msg, "UTF-8")+
-                            "&type="+URLEncoder.encode(tipe, "UTF-8")
+                            "&type=" + URLEncoder.encode(tipe, "UTF-8") +
+                            "&timestamp=" + URLEncoder.encode(msgTimestamp, "UTF-8")
             );
         }catch (Exception e){
             e.printStackTrace();
