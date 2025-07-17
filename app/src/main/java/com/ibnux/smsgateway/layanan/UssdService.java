@@ -76,11 +76,11 @@ public class UssdService extends AccessibilityService {
         if(PushService.current!=null){
             PushService.writeLog("USSD Received: " + text, this);
             SmsListener.sendPOST(getSharedPreferences("pref", 0).getString("urlPost", null),
-                    PushService.current.to+PushService.current.sim, text, "ussd", this);
+                    PushService.current.to+PushService.current.sim, text, "ussd", this, String.valueOf(System.currentTimeMillis()));
         }else {
             PushService.writeLog("USSD Received: " + text, this);
             SmsListener.sendPOST(getSharedPreferences("pref", 0).getString("urlPost", null),
-                    "ussd", text, "ussd", this);
+                    "ussd", text, "ussd", this, String.valueOf(System.currentTimeMillis()));
         }
         PushService.runUssd();
     }

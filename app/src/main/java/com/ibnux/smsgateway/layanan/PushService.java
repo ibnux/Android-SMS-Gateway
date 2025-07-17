@@ -81,8 +81,13 @@ public class PushService extends FirebaseMessagingService {
             }
             if (msg != null) {
                 writeLog("DELIVERED: " + msg + " : " + arg1.getStringExtra("number"), arg0);
-                SmsListener.sendPOST(getSharedPreferences("pref", 0).getString("urlPost", null),
-                        arg1.getStringExtra("number"), msg, "delivered", arg0);
+                SmsListener.sendPOST(
+                        getSharedPreferences("pref", 0).getString("urlPost", null),
+                        arg1.getStringExtra("number"),
+                        msg,
+                        "delivered",
+                        arg0,
+                        String.valueOf(System.currentTimeMillis()));
             }
         }
     };
@@ -133,10 +138,9 @@ public class PushService extends FirebaseMessagingService {
             }
 
             if (msg != null) {
-                Calendar cal = Calendar.getInstance();
                 writeLog("SENT: " + msg + " : " + arg1.getStringExtra("number"), arg0);
                 SmsListener.sendPOST(getSharedPreferences("pref", 0).getString("urlPost", null),
-                        arg1.getStringExtra("number"), msg, "sent", arg0);
+                        arg1.getStringExtra("number"), msg, "sent", arg0, String.valueOf(System.currentTimeMillis()));
             }
         }
     };
@@ -166,6 +170,9 @@ public class PushService extends FirebaseMessagingService {
             String sim = "0";
             if (remoteMessage.getData().containsKey("sim")) {
                 sim = remoteMessage.getData().get("sim");
+                if(sim.isEmpty()){
+                    sim = "0";
+                }
             }
             String message = remoteMessage.getData().get("message");
             String secret = remoteMessage.getData().get("secret");

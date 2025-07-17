@@ -7,8 +7,8 @@
  * Json file from services account
  * https://console.firebase.google.com/
  */
-$firebaseAuthFile = "android-sms-gateway-7c8a7-firebase-adminsdk-bdr9l-930c0dc510.json";
-$firebaseProject = "android-sms-gateway-7c8a7";
+$firebaseAuthFile = "pachi-lms-d73708832973.json";
+$firebaseProject = "pachi-lms";
 
 // RECEIVING MESSAGE
 $number = urldecode($_POST['number']);

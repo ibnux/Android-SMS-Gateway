@@ -33,7 +33,7 @@ public class SmsListener extends BroadcastReceiver {
             for (SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
                 String messageFrom = smsMessage.getOriginatingAddress();
                 String messageBody = smsMessage.getMessageBody();
-                String messageTimestamp = smsMessage.getTimestampMillis().toString();
+                String messageTimestamp = smsMessage.getTimestampMillis()+"";
                 Log.i("SMS From", messageFrom);
                 Log.i("SMS Body", messageBody);
                 writeLog("SMS: RECEIVED : " + messageFrom + " " + messageBody,context);
@@ -108,7 +108,7 @@ public class SmsListener extends BroadcastReceiver {
     }
 
 
-    public static void sendPOST(String urlPost,String from, String msg,String tipe,Context context,String msgTimestamp){
+    public static void sendPOST(String urlPost,String from, String msg,String tipe, Context context, String msgTimestamp){
         if(urlPost==null) return;
         if(from.isEmpty()) return;
         if(!urlPost.startsWith("http")) return;
